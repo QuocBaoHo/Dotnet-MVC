@@ -1,0 +1,92 @@
+@model HRStaffManagement.Models.Staff
+
+@{
+    ViewData["Title"] = "Staff Details";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user"></i> Staff Details
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            @if (!string.IsNullOrEmpty(Model.PhotoPath))
+                            {
+                                <img src="~/uploads/staff/@Model.PhotoPath" alt="Staff Photo" class="img-fluid rounded-circle" style="max-width: 200px; max-height: 200px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 200px; height: 200px;">
+                                    <i class="fas fa-user fa-5x text-white"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-4">
+                                    @Html.DisplayNameFor(model => model.StaffId)
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @Html.DisplayFor(model => model.StaffId)
+                                </dd>
+                                
+                                <dt class="col-sm-4">
+                                    @Html.DisplayNameFor(model => model.StaffName)
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @Html.DisplayFor(model => model.StaffName)
+                                </dd>
+                                
+                                <dt class="col-sm-4">
+                                    @Html.DisplayNameFor(model => model.Email)
+                                </dt>
+                                <dd class="col-sm-8">
+                                    <a href="mailto:@Model.Email">@Html.DisplayFor(model => model.Email)</a>
+                                </dd>
+                                
+                                <dt class="col-sm-4">
+                                    @Html.DisplayNameFor(model => model.PhoneNumber)
+                                </dt>
+                                <dd class="col-sm-8">
+                                    <a href="tel:@Model.PhoneNumber">@Html.DisplayFor(model => model.PhoneNumber)</a>
+                                </dd>
+                                
+                                <dt class="col-sm-4">
+                                    @Html.DisplayNameFor(model => model.StartingDate)
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @Html.DisplayFor(model => model.StartingDate)
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                        <div class="btn-group">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+}

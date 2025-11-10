@@ -1,0 +1,135 @@
+@model HRStaffManagement.Models.Staff
+
+@{
+    ViewData["Title"] = "Edit Staff";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user-edit"></i> Edit Staff Member
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" enctype="multipart/form-data" id="staffForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="PhotoPath" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="StaffId" class="form-label"></label>
+                                    <input asp-for="StaffId" class="form-control" placeholder="Enter staff ID" />
+                                    <span asp-validation-for="StaffId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="StaffName" class="form-label"></label>
+                                    <input asp-for="StaffName" class="form-control" placeholder="Enter full name" />
+                                    <span asp-validation-for="StaffName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control" placeholder="Enter email address" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <small class="form-text text-muted">Format: name@domain.com</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label"></label>
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                    <small class="form-text text-muted">Format: (123) 456-7890 or 123-456-7890</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="StartingDate" class="form-label"></label>
+                                    <input asp-for="StartingDate" class="form-control" type="date" />
+                                    <span asp-validation-for="StartingDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Photo" class="form-label">Upload New Photo</label>
+                                    <input asp-for="Photo" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif" />
+                                    <span asp-validation-for="Photo" class="text-danger"></span>
+                                    <small class="form-text text-muted">Allowed formats: .jpg, .jpeg, .png, .gif (Max 2MB)</small>
+                                    
+                                    @if (!string.IsNullOrEmpty(Model.PhotoPath))
+                                    {
+                                        <div class="mt-2">
+                                            <small class="text-muted">Current photo:</small><br />
+                                            <img src="~/uploads/staff/@Model.PhotoPath" alt="Current Photo" class="img-thumbnail" style="max-width: 100px; max-height: 100px;" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    
+    <script>
+        // Custom validation for email and phone using regex
+        $(document).ready(function() {
+            $.validator.addMethod("emailregex", function(value, element) {
+                return /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+            }, "Please enter a valid email address.");
+
+            $.validator.addMethod("phoneregex", function(value, element) {
+                return /^(\+?[0-9]{1,3}[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/.test(value);
+            }, "Please enter a valid phone number.");
+
+            // Add custom validation rules
+            $("#staffForm").validate({
+                rules: {
+                    Email: {
+                        emailregex: true
+                    },
+                    PhoneNumber: {
+                        phoneregex: true
+                    }
+                },
+                messages: {
+                    Email: {
+                        emailregex: "Please enter a valid email address (e.g., name@domain.com)"
+                    },
+                    PhoneNumber: {
+                        phoneregex: "Please enter a valid phone number (e.g., (123) 456-7890 or 123-456-7890)"
+                    }
+                }
+            });
+        });
+    </script>
+}
