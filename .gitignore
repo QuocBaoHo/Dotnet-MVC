@@ -3,6 +3,7 @@ bin/
 obj/
 *.dll
 *.pdb
+*.db
 
 # VS
 *.suo
