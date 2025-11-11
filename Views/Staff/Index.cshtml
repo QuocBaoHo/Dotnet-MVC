@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <h1 class="display-4 mb-4">Staff Management</h1>
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <p class="lead">Manage your company's staff information</p>
                 <a asp-action="Create" class="btn btn-primary">
@@ -16,16 +16,35 @@
                 </a>
             </div>
 
+            <style>
+                /* Prevent text selection in table headers */
+                th {
+                    user-select: none;
+                    -webkit-user-select: none;
+                    /* Safari */
+                    -moz-user-select: none;
+                    /* Firefox */
+                    -ms-user-select: none;
+                    /* IE/Edge */
+                    cursor: pointer;
+                    /* optional: show pointer for sortable headers */
+                }
+
+                th i {
+                    margin-left: 5px;
+                    /* spacing for the arrow */
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table id="staffTable" class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>@Html.DisplayNameFor(model => model.PhotoPath)</th>
-                            <th>@Html.DisplayNameFor(model => model.StaffId)</th>
-                            <th>@Html.DisplayNameFor(model => model.StaffName)</th>
-                            <th>@Html.DisplayNameFor(model => model.Email)</th>
-                            <th>@Html.DisplayNameFor(model => model.PhoneNumber)</th>
-                            <th>@Html.DisplayNameFor(model => model.StartingDate)</th>
+                            <th>Photo</th>
+                            <th>Staff ID</th>
+                            <th class="sortable" data-type="text">Staff Name <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-type="text">Email <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-type="text">Phone Number <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-type="date">Starting Date <i class="fas fa-sort"></i></th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -36,29 +55,34 @@
                                 <td>
                                     @if (!string.IsNullOrEmpty(item.PhotoPath))
                                     {
-                                        <img src="~/uploads/staff/@item.PhotoPath" alt="Staff Photo" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        <img src="~/@item.PhotoPath" alt="Staff Photo" class="rounded-circle"
+                                            style="width: 50px; height: 50px; object-fit: cover;" />
                                     }
                                     else
                                     {
-                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px;">
                                             <i class="fas fa-user text-white"></i>
                                         </div>
                                     }
                                 </td>
-                                <td>@Html.DisplayFor(modelItem => item.StaffId)</td>
-                                <td>@Html.DisplayFor(modelItem => item.StaffName)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
-                                <td>@Html.DisplayFor(modelItem => item.StartingDate)</td>
+                                <td>@item.StaffId</td>
+                                <td>@item.StaffName</td>
+                                <td>@item.Email</td>
+                                <td>@item.PhoneNumber</td>
+                                <td>@item.StartingDate.ToString("yyyy-MM-dd")</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="View Details">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"
+                                            title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"
+                                            title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Delete">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"
+                                            title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>
@@ -72,7 +96,8 @@
             @if (!Model.Any())
             {
                 <div class="alert alert-info text-center mt-4">
-                    <i class="fas fa-info-circle"></i> No staff members found. <a asp-action="Create">Add your first staff member</a>.
+                    <i class="fas fa-info-circle"></i> No staff members found. <a asp-action="Create">Add your first staff
+                        member</a>.
                 </div>
             }
         </div>
@@ -81,4 +106,112 @@
 
 @section Scripts {
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        const table = document.getElementById('staffTable');
+        const tbody = table.querySelector('tbody');
+        const headers = table.querySelectorAll('th.sortable');
+
+        // Store original rows to restore "no sort"
+        const originalRows = Array.from(tbody.querySelectorAll('tr')).map(row => row.cloneNode(true));
+
+        // Make headers unselectable and set cursor
+        headers.forEach(header => {
+            header.style.userSelect = 'none';
+            header.style.webkitUserSelect = 'none';
+            header.style.mozUserSelect = 'none';
+            header.style.msUserSelect = 'none';
+            header.style.cursor = 'pointer';
+        });
+
+        // Helper: flexible alphanumeric parser
+        function parseAlphanumericFlexible(str) {
+            const parts = str.match(/\d+|\D+/g) || [];
+            return parts.map(p => (/\d+/.test(p) ? parseInt(p, 10) : p.toLowerCase()));
+        }
+
+        function compareAlphanumeric(a, b, order) {
+            const aParts = parseAlphanumericFlexible(a);
+            const bParts = parseAlphanumericFlexible(b);
+            for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                const aPart = aParts[i] ?? '';
+                const bPart = bParts[i] ?? '';
+                if (typeof aPart === 'number' && typeof bPart === 'number') {
+                    if (aPart !== bPart) return order === 'asc' ? aPart - bPart : bPart - aPart;
+                } else {
+                    if (aPart !== bPart) return order === 'asc' ? aPart.localeCompare(bPart) : bPart.localeCompare(aPart);
+                }
+            }
+            return 0;
+        }
+
+        // Helper: flexible date parser
+        function parseDateFlexible(str) {
+            const [year, month, day] = str.split('-').map(Number);
+            if (!year || !month || !day) return new Date(0);
+            return new Date(year, month - 1, day);
+        }
+        headers.forEach((header, index) => {
+            header.dataset.sortOrder = 'none';
+
+            header.addEventListener('click', () => {
+                headers.forEach(h => {
+                    if (h !== header) {
+                        h.dataset.sortOrder = 'none';
+                        h.querySelector('i').className = 'fas fa-sort';
+                    }
+                });
+
+                const currentOrder = header.dataset.sortOrder;
+                if (currentOrder === 'none') header.dataset.sortOrder = 'asc';
+                else if (currentOrder === 'asc') header.dataset.sortOrder = 'desc';
+                else header.dataset.sortOrder = 'none';
+
+                updateArrow(header);
+
+                // FIX 2: +2 because Photo AND Staff ID are non-sortable
+                const columnIndex = index + 2;
+                sortTable(columnIndex, header.dataset.type, header.dataset.sortOrder);
+            });
+        });
+
+        function updateArrow(header) {
+            const icon = header.querySelector('i');
+            const order = header.dataset.sortOrder;
+            icon.className = order === 'asc' ? 'fas fa-sort-up' :
+                order === 'desc' ? 'fas fa-sort-down' : 'fas fa-sort';
+        }
+
+        function sortTable(columnIndex, type, order) {
+            if (order === 'none') {
+                // FIX 3: Use cloned rows
+                tbody.innerHTML = '';
+                originalRows.forEach(cloned => tbody.appendChild(cloned.cloneNode(true)));
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                let aText = a.cells[columnIndex].textContent.trim();
+                let bText = b.cells[columnIndex].textContent.trim();
+
+                if (type === 'alphanumeric') {
+                    return compareAlphanumeric(aText, bText, order);
+                } else if (type === 'date') {
+                    aText = parseDateFlexible(aText);
+                    bText = parseDateFlexible(bText);
+                    return order === 'asc' ? aText - bText : bText - aText;
+                } else if (type === 'number') {
+                    aText = parseInt(aText.match(/\d+/)?.[0] || 0, 10);
+                    bText = parseInt(bText.match(/\d+/)?.[0] || 0, 10);
+                    return order === 'asc' ? aText - bText : bText - aText;
+                } else {
+                    return order === 'asc' ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                }
+            });
+
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    </script>
 }

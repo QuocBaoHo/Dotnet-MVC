@@ -1,0 +1,29 @@
+# Build
+bin/
+obj/
+*.dll
+*.pdb
+
+# VS
+*.suo
+*.user
+*.userosscache
+.vscode/
+.idea/
+
+# NuGet
+packages/
+*.nupkg
+
+# Secrets & Local
+appsettings.Development.json
+secrets.json
+*.pfx
+
+# Node / Frontend
+node_modules/
+wwwroot/lib/
+
+# Logs
+*.log
+logs/

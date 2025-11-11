@@ -18,11 +18,13 @@
                         <div class="col-md-4 text-center mb-4">
                             @if (!string.IsNullOrEmpty(Model.PhotoPath))
                             {
-                                <img src="~/uploads/staff/@Model.PhotoPath" alt="Staff Photo" class="img-fluid rounded-circle" style="max-width: 200px; max-height: 200px; object-fit: cover;" />
+                                <img src="~/@Model.PhotoPath" alt="@Model.StaffName's photo"
+                                    style="width: 200px; height: 150px; object-fit: contain; border-radius: 8px; background-color: #f0f0f0;" />
                             }
                             else
                             {
-                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 200px; height: 200px;">
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+                                    style="width: 200px; height: 200px;">
                                     <i class="fas fa-user fa-5x text-white"></i>
                                 </div>
                             }
@@ -35,28 +37,28 @@
                                 <dd class="col-sm-8">
                                     @Html.DisplayFor(model => model.StaffId)
                                 </dd>
-                                
+
                                 <dt class="col-sm-4">
                                     @Html.DisplayNameFor(model => model.StaffName)
                                 </dt>
                                 <dd class="col-sm-8">
                                     @Html.DisplayFor(model => model.StaffName)
                                 </dd>
-                                
+
                                 <dt class="col-sm-4">
                                     @Html.DisplayNameFor(model => model.Email)
                                 </dt>
                                 <dd class="col-sm-8">
                                     <a href="mailto:@Model.Email">@Html.DisplayFor(model => model.Email)</a>
                                 </dd>
-                                
+
                                 <dt class="col-sm-4">
                                     @Html.DisplayNameFor(model => model.PhoneNumber)
                                 </dt>
                                 <dd class="col-sm-8">
                                     <a href="tel:@Model.PhoneNumber">@Html.DisplayFor(model => model.PhoneNumber)</a>
                                 </dd>
-                                
+
                                 <dt class="col-sm-4">
                                     @Html.DisplayNameFor(model => model.StartingDate)
                                 </dt>

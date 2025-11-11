@@ -53,6 +53,10 @@ namespace HRStaffManagement.Controllers
         {
             if (ModelState.IsValid)
             {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
                 // Handle file upload
                 if (staff.Photo != null && staff.Photo.Length > 0)
                 {
@@ -68,66 +72,57 @@ namespace HRStaffManagement.Controllers
         }
 
         // GET: Staff/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var staff = await _context.Staff.FindAsync(id);
-            if (staff == null)
+            if (staff == null) return NotFound();
+
+            var model = new EditStaffViewModel
             {
-                return NotFound();
-            }
-            return View(staff);
+                Id = staff.Id,
+                StaffId = staff.StaffId,
+                StaffName = staff.StaffName,
+                Email = staff.Email,
+                PhoneNumber = staff.PhoneNumber,
+                StartingDate = staff.StartingDate,
+                PhotoPath = staff.PhotoPath
+            };
+
+            return View(model);
         }
 
-        // POST: Staff/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,StaffId,StaffName,Email,PhoneNumber,StartingDate,PhotoPath,Photo")] Staff staff)
+        public async Task<IActionResult> Edit(EditStaffViewModel model)
         {
-            if (id != staff.Id)
+            if (!ModelState.IsValid) return View(model);
+
+            var staff = await _context.Staff.FindAsync(model.Id);
+            if (staff == null) return NotFound();
+
+            staff.StaffId = model.StaffId;
+            staff.StaffName = model.StaffName;
+            staff.Email = model.Email;
+            staff.PhoneNumber = model.PhoneNumber;
+            staff.StartingDate = model.StartingDate;
+
+            if (model.Photo != null && model.Photo.Length > 0)
             {
-                return NotFound();
+                if (!string.IsNullOrEmpty(staff.PhotoPath))
+                    DeleteFile(staff.PhotoPath);
+
+                staff.PhotoPath = await UploadFile(model.Photo);
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Handle file upload if a new file is provided
-                    if (staff.Photo != null && staff.Photo.Length > 0)
-                    {
-                        // Delete old photo if exists
-                        if (!string.IsNullOrEmpty(staff.PhotoPath))
-                        {
-                            DeleteFile(staff.PhotoPath);
-                        }
+            _context.Update(staff);
+            await _context.SaveChangesAsync();
 
-                        string uniqueFileName = await UploadFile(staff.Photo);
-                        staff.PhotoPath = uniqueFileName;
-                    }
-
-                    _context.Update(staff);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!StaffExists(staff.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(staff);
+            return RedirectToAction(nameof(Index));
         }
+
+
+
 
         // GET: Staff/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -175,7 +170,7 @@ namespace HRStaffManagement.Controllers
         private async Task<string> UploadFile(IFormFile file)
         {
             string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "staff");
-            
+
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
@@ -189,17 +184,16 @@ namespace HRStaffManagement.Controllers
                 await file.CopyToAsync(fileStream);
             }
 
-            return uniqueFileName;
+            // Return relative URL instead of just the file name
+            return Path.Combine("uploads", "staff", uniqueFileName).Replace("\\", "/");
         }
 
-        private void DeleteFile(string fileName)
+        private void DeleteFile(string filePath)
         {
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "staff");
-            string filePath = Path.Combine(uploadsFolder, fileName);
-
-            if (System.IO.File.Exists(filePath))
+            string absolutePath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
+            if (System.IO.File.Exists(absolutePath))
             {
-                System.IO.File.Delete(filePath);
+                System.IO.File.Delete(absolutePath);
             }
         }
     }
