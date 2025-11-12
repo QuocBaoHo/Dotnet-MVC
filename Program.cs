@@ -1,5 +1,6 @@
 using HRStaffManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,18 @@ if (builder.Environment.IsDevelopment())
 }
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    // Skip antiforgery validation in tests
+    builder.Services.AddControllersWithViews(options =>
+    {
+        options.Filters.Add(new IgnoreAntiforgeryTokenAttribute());
+    });
+}
+else
+{
+    builder.Services.AddControllersWithViews();
+}
 
 // Configure Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

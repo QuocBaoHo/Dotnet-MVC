@@ -23,10 +23,12 @@ namespace HRStaffManagement.Tests
             await Task.Delay(DelayMs);
 
             if (expected == "Success")
-                driver.FindElement(By.CssSelector("button[type='submit']")).Click();
+                driver.FindElement(By.Id("DeleteButton")).Click();
 
             await Task.Delay(DelayMs);
             driver.Quit();
         }
+
+
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using HRStaffManagement.Models;
+using Microsoft.AspNetCore.Hosting;
 
 namespace HRStaffManagement.Tests
 {
@@ -22,15 +23,26 @@ namespace HRStaffManagement.Tests
         {
             Factory = factory.WithWebHostBuilder(builder =>
             {
+                // Set environment to Testing
+                builder.UseEnvironment("Testing");
+
                 builder.ConfigureServices(services =>
                 {
+                    // Remove existing DbContext
                     var descriptor = services.SingleOrDefault(
                         d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
                     if (descriptor != null)
                         services.Remove(descriptor);
 
+                    // Add in-memory database
                     services.AddDbContext<ApplicationDbContext>(options =>
                         options.UseInMemoryDatabase("ExcelSeleniumDb_" + Guid.NewGuid()));
+
+                    // Disable Anti-Forgery for tests
+                    services.AddControllersWithViews(options =>
+                    {
+                        options.Filters.Add(new Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute());
+                    });
                 });
             });
         }
