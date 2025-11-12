@@ -48,7 +48,8 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label asp-for="PhoneNumber" class="form-label"></label>
-                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                    <input asp-for="PhoneNumber" class="form-control"
+                                        placeholder="Enter phone number" />
                                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                                 </div>
                             </div>
@@ -58,23 +59,28 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label asp-for="StartingDate" class="form-label"></label>
-                                    <input asp-for="StartingDate" class="form-control" type="date" />
+                                    <input asp-for="StartingDate" class="form-control" type="text" id="StartingDate"
+                                        placeholder="Enter date (e.g., 22/11/2004 or 2004-11-22)" />
                                     <span asp-validation-for="StartingDate" class="text-danger"></span>
+                                    <small class="form-text text-muted">Format: dd/MM/yyyy or yyyy-MM-dd</small>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label asp-for="Photo" class="form-label">Upload New Photo</label>
-                                    <input asp-for="Photo" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif" />
+                                    <input asp-for="Photo" class="form-control" type="file"
+                                        accept=".jpg,.jpeg,.png,.gif" />
                                     <span asp-validation-for="Photo" class="text-danger"></span>
-                                    <small class="form-text text-muted">Allowed formats: .jpg, .jpeg, .png, .gif (Max 2MB)</small>
+                                    <small class="form-text text-muted">Allowed formats: .jpg, .jpeg, .png, .gif (Max
+                                        2MB)</small>
 
                                     @if (!string.IsNullOrEmpty(Model.PhotoPath))
                                     {
                                         <div class="mt-2">
                                             <small class="text-muted">Current photo:</small><br />
-                                            <img src="~/@Model.PhotoPath" alt="Current Photo" class="img-thumbnail" style="max-width:100px; max-height:100px;" />
+                                            <img src="~/@Model.PhotoPath" alt="Current Photo" class="img-thumbnail"
+                                                style="max-width:100px; max-height:100px;" />
                                         </div>
                                     }
                                 </div>
@@ -97,6 +103,58 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        // --- Allow multiple date input formats ---
+        function parseDate(value) {
+            // Try dd/MM/yyyy
+            let parts = value.split("/");
+            if (parts.length === 3) {
+                let day = parts[0], month = parts[1], year = parts[2];
+                if (day.length === 1) day = "0" + day;
+                if (month.length === 1) month = "0" + month;
+                return `${year}-${month}-${day}`; // convert to yyyy-MM-dd
+            }
+
+            // Try dd-MM-yyyy
+            parts = value.split("-");
+            if (parts.length === 3 && parts[2].length === 4 && parts[0].length <= 2) {
+                let day = parts[0], month = parts[1], year = parts[2];
+                if (day.length === 1) day = "0" + day;
+                if (month.length === 1) month = "0" + month;
+                return `${year}-${month}-${day}`;
+            }
+
+            // Already yyyy-MM-dd or other valid format
+            return value;
+        }
+
+        // --- Regex validation for flexible formats ---
+        $.validator.addMethod("dateregex", function(value, element) {
+            return value === "" || /^(\d{1,2}[\/-]\d{1,2}[\/-]\d{4}|\d{4}-\d{1,2}-\d{1,2})$/.test(value);
+        }, "Please enter a valid date (e.g., 22/11/2004 or 2004-11-22)");
+
+        // --- Apply validation ---
+        $("#staffForm").validate({
+            rules: {
+                StartingDate: { dateregex: true }
+            },
+            messages: {
+                StartingDate: { dateregex: "Please enter a valid date (e.g., 22/11/2004 or 2004-11-22)" }
+            }
+        });
+
+        // --- Convert input before submission ---
+        $("#staffForm").on("submit", function () {
+            const input = $("#StartingDate");
+            const val = input.val();
+            if (val) {
+                const formatted = parseDate(val.trim());
+                input.val(formatted);
+            }
+        });
+    </script>
 }

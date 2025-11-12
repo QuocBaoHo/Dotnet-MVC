@@ -3,6 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure the application always runs on port 5000 for Selenium E2E tests
+// This ensures consistency when running "dotnet run" for E2E testing
+if (builder.Environment.IsDevelopment())
+{
+    var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+    if (string.IsNullOrEmpty(urls))
+    {
+        builder.WebHost.UseUrls("http://localhost:5000");
+    }
+}
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -12,6 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthorization();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -19,13 +36,6 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

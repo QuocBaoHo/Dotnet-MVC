@@ -22,8 +22,8 @@ namespace HRStaffManagement.Controllers
             return View(await _context.Staff.ToListAsync());
         }
 
-        // GET: Staff/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Staff/Details/S001
+        public async Task<IActionResult> Details(string? id)
         {
             if (id == null)
             {
@@ -31,7 +31,7 @@ namespace HRStaffManagement.Controllers
             }
 
             var staff = await _context.Staff
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.StaffId == id);
             if (staff == null)
             {
                 return NotFound();
@@ -73,9 +73,14 @@ namespace HRStaffManagement.Controllers
 
         // GET: Staff/Edit/5
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(string id)
         {
-            var staff = await _context.Staff.FindAsync(id);
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var staff = await _context.Staff.FirstOrDefaultAsync(s => s.StaffId == id);
             if (staff == null) return NotFound();
 
             var model = new EditStaffViewModel
@@ -89,6 +94,7 @@ namespace HRStaffManagement.Controllers
                 PhotoPath = staff.PhotoPath
             };
 
+            ModelState.Clear();
             return View(model);
         }
 
@@ -125,7 +131,7 @@ namespace HRStaffManagement.Controllers
 
 
         // GET: Staff/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string? id)
         {
             if (id == null)
             {
@@ -133,12 +139,13 @@ namespace HRStaffManagement.Controllers
             }
 
             var staff = await _context.Staff
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.StaffId == id);
             if (staff == null)
             {
                 return NotFound();
             }
 
+            ModelState.Clear();
             return View(staff);
         }
 
